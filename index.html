@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Texty - Décodeur π</title>
+    <style>
+        /* Styles inchangés pour la présentation... */
+
+         :root {
+            --snap-yellow: #fffc00;
+            --snap-black: #121212;
+            --snap-white: #fff;
+            --bubble-gray: #ebebeb;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Segoe UI", sans-serif;
+            background-color: #fff;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #topBar {
+            background: #fffc00;
+            color: #121212;
+            padding: 12px 16px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #messages {
+            flex: 1;
+            padding: 10px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message {
+            background-color: #ebebeb;
+            padding: 10px 14px;
+            border-radius: 18px;
+            margin: 5px 0;
+            width: fit-content;
+            max-width: 90%;
+        }
+
+        #inputForm {
+            display: flex;
+            padding: 10px;
+            border-top: 1px solid #ddd;
+        }
+
+        #inputMessage {
+            flex: 1;
+            padding: 10px 14px;
+            font-size: 1rem;
+            border-radius: 25px;
+            border: 1px solid #ccc;
+            margin-right: 10px;
+            outline: none;
+        }
+
+        .button-style {
+            background-color: #333;
+            color: var(--snap-white);
+            border: none;
+            padding: 10px 16px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin-left: 10px;
+        }
+
+        #photoButton  {
+            background-color: #121212;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        #text {
+            background-color: var(--snap-black);
+            color: var(--snap-white);
+            border: none;
+            padding: 10px 16px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            margin: 0 auto;
+        }
+
+    </style>
+</head>
+<body>
+    <div id="topBar">
+        <button id="text" class="button-style" onclick="window.location.href = 'https://xeroxytb.github.io/decodeur/index.html';">Décodeur π</button>
+    </div>
+    <div id="messages"></div>
+    <form id="inputForm">
+        <input type="text" id="inputMessage" placeholder="Message ou code Pi..." autocomplete="off" />
+        <button id="photoButton" type="submit">Envoyer</button>
+    </form>
+
+    <script>
+        const piDecimals = "14159265358979323846264338327950288419716939937510" +
+            "58209749445923078164062862089986280348253421170679" +
+            "82148086513282306647093844609550582231725359408128" +
+            "48111745028410270193852110555964462294895493038196";
+
+        // Découpage des décimales de Pi en triplets
+        const piTriplets = [];
+        for (let i = 0; i < piDecimals.length - 2; i++) {
+            const triplet = piDecimals.slice(i, i + 3);
+            if (!piTriplets.includes(triplet)) {
+                piTriplets.push(triplet);
+            }
+        }
+
+        // Créer un tableau d'encodage pour tous les codes Unicode jusqu’à 999 (ou plus si besoin)
+        const unicodeToTriplets = {};
+        const tripletsToUnicode = {};
+        for (let i = 0; i < 1000 && i < piTriplets.length; i++) {
+            const charCode = i;
+            const triplet = piTriplets[i];
+            unicodeToTriplets[charCode] = triplet;
+            tripletsToUnicode[triplet] = charCode;
+        }
+
+        function encode(text) {
+            return text.split("")
+                .map(c => {
+                    const code = c.charCodeAt(0);
+                    return unicodeToTriplets[code] || "000";
+                })
+                .join(" ");
+        }
+
+        function decode(code) {
+            const parts = code.match(/\d{3}/g) || [];
+            return parts.map(p => {
+                const code = tripletsToUnicode[p];
+                return code !== undefined ? String.fromCharCode(code) : "�";
+            }).join("");
+        }
+
+        document.getElementById("inputForm").addEventListener("submit", function (e) {
+            e.preventDefault();
+            const input = document.getElementById("inputMessage").value.trim();
+            const isNumeric = /^\d{3}(?:\s?\d{3})*$/.test(input);
+            const output = isNumeric ? decode(input) : encode(input);
+
+            const messageElement = document.createElement("div");
+            messageElement.className = "message";
+            messageElement.textContent = output;
+            document.getElementById("messages").appendChild(messageElement);
+
+            document.getElementById("inputMessage").value = "";
+        });
+    </script>
+</body>
+</html>
